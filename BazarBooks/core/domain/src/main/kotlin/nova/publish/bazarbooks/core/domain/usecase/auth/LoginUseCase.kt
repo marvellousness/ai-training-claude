@@ -1,0 +1,7 @@
+package nova.publish.bazarbooks.core.domain.usecase.auth
+
+import nova.publish.bazarbooks.core.domain.repository.AuthRepository
+
+class LoginUseCase(private val repository: AuthRepository) {
+    suspend operator fun invoke(email: String, password: String): Result<Unit> = repository.login(email, password)
+}

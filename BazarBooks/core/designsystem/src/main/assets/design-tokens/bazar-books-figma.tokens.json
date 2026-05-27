@@ -1,0 +1,92 @@
+{
+  "source": {
+    "file": "Bazar Books",
+    "url": "https://www.figma.com/design/eXxEuMbAk01zpT9j9Qegim/Bazar-Books?node-id=1-2",
+    "styleguidePageId": "1:2",
+    "designPageId": "0:1",
+    "extractedWith": "figma-mcp-go"
+  },
+  "dimensions": {
+    "mobileScreen": { "width": 375, "height": 812, "unit": "px" },
+    "styleguide": {
+      "frameWidth": 1440,
+      "colorFrameHeight": 1299,
+      "typographyFrameHeight": 4565,
+      "headerHeight": 186,
+      "colorSwatch": { "width": 172, "height": 88 }
+    }
+  },
+  "colors": {
+    "primary": {
+      "50": "#FAF9FD",
+      "100": "#E5DEF8",
+      "200": "#CABCEF",
+      "300": "#A28CE0",
+      "400": "#7D64C3",
+      "500": "#54408C",
+      "600": "#352368",
+      "700": "#251554",
+      "800": "#10052F",
+      "900": "#09031B"
+    },
+    "gray": {
+      "50": "#FAFAFA",
+      "100": "#F5F5F5",
+      "200": "#E8E8E8",
+      "300": "#D6D6D6",
+      "400": "#B8B8B8",
+      "500": "#A6A6A6",
+      "600": "#7A7A7A",
+      "700": "#454545",
+      "800": "#292929",
+      "900": "#121212"
+    },
+    "others": {
+      "white": "#FFFFFF",
+      "blue": "#3784FB",
+      "green": "#34A853",
+      "orange": "#FF8C39",
+      "red": "#EF5A56",
+      "yellow": "#F5BE00"
+    }
+  },
+  "typography": {
+    "heading1": { "figmaStyle": "Heading/H1", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 40, "lineHeight": "auto", "letterSpacing": "0px" },
+    "heading2": { "figmaStyle": "Heading/H2", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 32, "lineHeight": "100%", "letterSpacing": "0px" },
+    "heading3": { "figmaStyle": "Heading/H3", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 24, "lineHeight": "135%", "letterSpacing": "-3%" },
+    "heading4": { "figmaStyle": "Heading/H4", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 20, "lineHeight": "140%", "letterSpacing": "-3%" },
+    "heading5": { "figmaStyle": "Heading/H5", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 18, "lineHeight": "135%", "letterSpacing": "-3%" },
+    "heading6": { "figmaStyle": "Heading/H6", "fontFamily": "Open Sans", "fontWeight": "Bold", "fontSize": 16, "lineHeight": "150%", "letterSpacing": "0.3px" },
+    "body18Medium": { "figmaStyle": "Body/18/Medium", "fontFamily": "Roboto", "fontWeight": "Medium", "fontSize": 18, "lineHeight": "150%", "letterSpacing": "0.3px" },
+    "body16Semibold": { "figmaStyle": "Body/16/Semibold", "fontFamily": "Roboto", "fontWeight": "SemiBold", "fontSize": 16, "lineHeight": "150%", "letterSpacing": "0px" },
+    "body16Medium": { "figmaStyle": "Body/16/Medium", "fontFamily": "Roboto", "fontWeight": "Medium", "fontSize": 16, "lineHeight": "150%", "letterSpacing": "0px" },
+    "body16Regular": { "figmaStyle": "Body/16/Regular", "fontFamily": "Roboto", "fontWeight": "Regular", "fontSize": 16, "lineHeight": "150%", "letterSpacing": "0px" },
+    "body14Bold": { "figmaStyle": "Body/14/Bold", "fontFamily": "Roboto", "fontWeight": "Bold", "fontSize": 14, "lineHeight": "140%", "letterSpacing": "0.3px" },
+    "body14Semibold": { "figmaStyle": "Body/14/Semibold", "fontFamily": "Roboto", "fontWeight": "SemiBold", "fontSize": 14, "lineHeight": "140%", "letterSpacing": "0px" },
+    "body14Medium": { "figmaStyle": "Body/14/Medium", "fontFamily": "Roboto", "fontWeight": "Medium", "fontSize": 14, "lineHeight": "140%", "letterSpacing": "0px" },
+    "body14Regular": { "figmaStyle": "Body/14/Regular", "fontFamily": "Roboto", "fontWeight": "Regular", "fontSize": 14, "lineHeight": "140%", "letterSpacing": "0px" },
+    "body12Bold": { "figmaStyle": "Body/12/Bold", "fontFamily": "Roboto", "fontWeight": "Bold", "fontSize": 12, "lineHeight": "135%", "letterSpacing": "0.3px" },
+    "body12Semibold": { "figmaStyle": "Body/12/Semibold", "fontFamily": "Roboto", "fontWeight": "SemiBold", "fontSize": 12, "lineHeight": "135%", "letterSpacing": "0px" },
+    "body12Medium": { "figmaStyle": "Body/12/Medium", "fontFamily": "Roboto", "fontWeight": "Medium", "fontSize": 12, "lineHeight": "135%", "letterSpacing": "0px" },
+    "body12Regular": { "figmaStyle": "Body/12/Regular", "fontFamily": "Roboto", "fontWeight": "Regular", "fontSize": 12, "lineHeight": "135%", "letterSpacing": "0px" }
+  },
+  "text": {
+    "brand": "Bazar.",
+    "onboarding": {
+      "screen2Title": "Now reading books will be easier",
+      "screen2Body": "Discover new worlds, join a vibrant reading community. Start your reading adventure effortlessly with us.",
+      "screen3Title": "Your Bookish Soulmate Awaits",
+      "screen3Body": "Let us be your guide to the perfect read. Discover books tailored to your tastes for a truly rewarding experience.",
+      "screen4Title": "Start Your Adventure",
+      "screen4Body": "Ready to embark on a quest for inspiration and knowledge? Your adventure begins now. Let's go!"
+    },
+    "auth": {
+      "signInTitle": "Welcome Back",
+      "signInBody": "Sign to your account",
+      "signUpTitle": "Sign Up",
+      "signUpBody": "Create account and choose favorite menu",
+      "forgotPassword": "Forgot Password?"
+    },
+    "navigation": ["Home", "Category", "Cart", "Profile"]
+  }
+}
