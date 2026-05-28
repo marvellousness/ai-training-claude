@@ -18,8 +18,10 @@ import nova.publish.bazarbooks.core.data.repository.DataStoreAuthRepository
 import nova.publish.bazarbooks.core.data.repository.FakeNotificationRepository
 import nova.publish.bazarbooks.core.data.repository.FakeOrderRepository
 import nova.publish.bazarbooks.core.data.repository.FakeUserRepository
+import nova.publish.bazarbooks.core.data.repository.OfflineFirstAddressRepository
 import nova.publish.bazarbooks.core.data.repository.OfflineFirstBookRepository
 import nova.publish.bazarbooks.core.data.repository.OfflineFirstCartRepository
+import nova.publish.bazarbooks.core.domain.repository.AddressRepository
 import nova.publish.bazarbooks.core.domain.repository.AuthRepository
 import nova.publish.bazarbooks.core.domain.repository.BookRepository
 import nova.publish.bazarbooks.core.domain.repository.CartRepository
@@ -47,7 +49,7 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideBookLocalDataSource(database: BazarBooksDatabase) = BookLocalDataSource(database.bookDao())
+    fun provideBookLocalDataSource(database: BazarBooksDatabase) = BookLocalDataSource(database.bookDao(), database.figmaMetadataDao())
 
     @Provides
     @Singleton
@@ -101,6 +103,10 @@ object DataModule {
     @Provides
     @Singleton
     fun provideCartRepository(localDataSource: CartLocalDataSource): CartRepository = OfflineFirstCartRepository(localDataSource)
+
+    @Provides
+    @Singleton
+    fun provideAddressRepository(database: BazarBooksDatabase): AddressRepository = OfflineFirstAddressRepository(database.figmaMetadataDao())
 
     @Provides
     @Singleton

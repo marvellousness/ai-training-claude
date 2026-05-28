@@ -57,10 +57,83 @@ fun AppNavHost(
                 onCart = { navController.navigate(AppRoute.Cart.route) },
                 onProfile = { navController.navigate(AppRoute.Profile.route) },
                 onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBook = { bookId -> navController.navigate(AppRoute.BookDetail.create(bookId)) },
+                onVendors = { navController.navigate(AppRoute.VendorList.route) },
+                onAuthors = { navController.navigate(AppRoute.AuthorList.route) },
+                onAuthor = { authorId -> navController.navigate(AppRoute.AuthorDetail.create(authorId)) },
+                onSearch = { navController.navigate(AppRoute.Search.route) },
+                onLocation = { navController.navigate(AppRoute.AddressEdit.create(null)) },
             )
         }
         composable(AppRoute.Category.route) {
-            Text("Category")
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBook = { bookId -> navController.navigate(AppRoute.BookDetail.create(bookId)) },
+                onSearch = { navController.navigate(AppRoute.Search.route) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.Category,
+            )
+        }
+        composable(AppRoute.BookDetail.route) { entry ->
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.BookDetail,
+                initialBookId = entry.arguments?.getString("bookId"),
+            )
+        }
+        composable(AppRoute.VendorList.route) {
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.Vendors,
+            )
+        }
+        composable(AppRoute.AuthorList.route) {
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onAuthor = { authorId -> navController.navigate(AppRoute.AuthorDetail.create(authorId)) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.Authors,
+            )
+        }
+        composable(AppRoute.AuthorDetail.route) { entry ->
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBook = { bookId -> navController.navigate(AppRoute.BookDetail.create(bookId)) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.AuthorDetail,
+                initialAuthorId = entry.arguments?.getString("authorId"),
+            )
+        }
+        composable(AppRoute.Search.route) {
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBook = { bookId -> navController.navigate(AppRoute.BookDetail.create(bookId)) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.Search,
+            )
+        }
+        composable(AppRoute.AddressEdit.route) {
+            HomeRoute(
+                onCart = { navController.navigate(AppRoute.Cart.route) },
+                onProfile = { navController.navigate(AppRoute.Profile.route) },
+                onNotifications = { navController.navigate(AppRoute.Notifications.route) },
+                onBack = { navController.popBackStack() },
+                initialSurface = nova.publish.bazarbooks.feature.home.HomeSurface.LocationForm,
+            )
         }
         composable(AppRoute.Cart.route) {
             CartRoute(

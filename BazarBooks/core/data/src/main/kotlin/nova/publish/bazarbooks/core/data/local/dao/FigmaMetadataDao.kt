@@ -3,6 +3,7 @@ package nova.publish.bazarbooks.core.data.local.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import nova.publish.bazarbooks.core.data.local.entity.AddressEntity
 import nova.publish.bazarbooks.core.data.local.entity.NotificationEntity
 import nova.publish.bazarbooks.core.data.local.entity.OfferEntity
@@ -18,6 +19,9 @@ import nova.publish.bazarbooks.core.data.local.entity.RecentSearchEntity
 interface FigmaMetadataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAddresses(items: List<AddressEntity>)
+
+    @Query("SELECT * FROM addresses WHERE id = :id LIMIT 1")
+    suspend fun getAddress(id: String): AddressEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertPaymentMethods(items: List<PaymentMethodEntity>)
@@ -42,6 +46,9 @@ interface FigmaMetadataDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertRecentSearches(items: List<RecentSearchEntity>)
+
+    @Query("SELECT * FROM recent_searches ORDER BY createdAtEpochMillis DESC LIMIT :limit")
+    suspend fun getRecentSearches(limit: Int = 10): List<RecentSearchEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertPendingOperations(items: List<PendingOperationEntity>)

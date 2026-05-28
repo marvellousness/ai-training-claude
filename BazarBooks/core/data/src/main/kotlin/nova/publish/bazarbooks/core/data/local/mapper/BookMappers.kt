@@ -32,6 +32,10 @@ fun BookEntity.toDomain(isWishlisted: Boolean = false) = Book(
     category = category,
     rating = rating,
     description = description,
+    vendor = vendor,
+    stock = stock,
+    discountPercent = discountPercent,
+    isWishlisted = isWishlisted,
 )
 
 fun CartItemWithBook.toDomain() = CartItem(

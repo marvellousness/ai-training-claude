@@ -10,4 +10,8 @@ data class Book(
     val category: String,
     val rating: Float? = null,
     val description: String? = null,
+    val vendor: String = "",
+    val stock: Int = 0,
+    val discountPercent: Int = 0,
+    val isWishlisted: Boolean = false,
 )

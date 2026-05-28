@@ -3,5 +3,8 @@
     "allow": [
       "Skill(research)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "figma-mcp-go"
+  ]
 }

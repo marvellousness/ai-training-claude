@@ -48,7 +48,7 @@ The app keeps the existing Android module scaffold:
 - Multi-account: no, one active account at a time.
 - UI: native Compose following Material 3, stitched to Figma layout/copy direction, not pixel-perfect.
 - Dark mode: yes.
-- Icons: Material icons.
+- Icons: Material icons, icons from Figma design.
 - Form factors: phone, tablet, foldable, landscape.
 - Tests: ViewModel/use case unit tests, repository tests, Room tests, Compose UI tests.
 - Localization: English and Vietnamese.

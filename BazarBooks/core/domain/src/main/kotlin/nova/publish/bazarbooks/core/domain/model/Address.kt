@@ -8,4 +8,10 @@ data class Address(
     val city: String,
     val region: String,
     val postalCode: String? = null,
+    val block: String = "",
+    val street: String = "",
+    val building: String = "",
+    val floor: String? = null,
+    val flat: String? = null,
+    val avenue: String? = null,
 )

@@ -40,6 +40,18 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getBook(id: String): BookEntity?
 
+    @Query("SELECT * FROM vendors ORDER BY name")
+    suspend fun getVendors(): List<VendorEntity>
+
+    @Query("SELECT * FROM authors ORDER BY name")
+    suspend fun getAuthors(): List<AuthorEntity>
+
+    @Query("SELECT * FROM authors WHERE id = :id")
+    suspend fun getAuthor(id: String): AuthorEntity?
+
+    @Query("SELECT * FROM books WHERE author = :authorName ORDER BY updatedAtEpochMillis DESC")
+    suspend fun getBooksByAuthorName(authorName: String): List<BookEntity>
+
     @Query("SELECT EXISTS(SELECT 1 FROM wishlist WHERE bookId = :bookId)")
     suspend fun isWishlisted(bookId: String): Boolean
 
