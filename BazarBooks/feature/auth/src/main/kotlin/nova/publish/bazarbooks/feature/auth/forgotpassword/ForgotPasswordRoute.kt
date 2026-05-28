@@ -1,6 +1,7 @@
 package nova.publish.bazarbooks.feature.auth.forgotpassword
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -11,5 +12,13 @@ fun ForgotPasswordRoute(
     viewModel: ForgotPasswordViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.navigateSignIn) {
+        if (state.navigateSignIn) {
+            onBack()
+            viewModel.onIntent(ForgotPasswordIntent.NavigationHandled)
+        }
+    }
+
     ForgotPasswordScreen(state = state, onIntent = viewModel::onIntent, onBack = onBack)
 }

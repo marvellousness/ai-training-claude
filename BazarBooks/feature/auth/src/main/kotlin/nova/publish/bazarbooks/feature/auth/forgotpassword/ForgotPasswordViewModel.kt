@@ -18,17 +18,45 @@ import nova.publish.bazarbooks.core.domain.usecase.auth.RequestPasswordResetUseC
 class ForgotPasswordViewModel @Inject constructor(
     private val requestPasswordResetUseCase: RequestPasswordResetUseCase,
 ) : ViewModel() {
+    companion object {
+        const val SimulatedOtpCode = "2850"
+        private const val OtpLength = 4
+        private const val MinPhoneDigits = 8
+    }
+
     private val _state = MutableStateFlow(ForgotPasswordState())
     val state: StateFlow<ForgotPasswordState> = _state.asStateFlow()
 
     fun onIntent(intent: ForgotPasswordIntent) {
         when (intent) {
+            is ForgotPasswordIntent.MethodSelected -> _state.update {
+                it.copy(selectedMethod = intent.value, methodError = null)
+            }
+            ForgotPasswordIntent.SubmitMethod -> submitMethod()
             is ForgotPasswordIntent.EmailChanged -> _state.update { it.copy(email = intent.value, emailError = null) }
+            is ForgotPasswordIntent.PhoneChanged -> _state.update { it.copy(phone = intent.value, phoneError = null) }
             ForgotPasswordIntent.SubmitEmail -> submitEmail()
-            is ForgotPasswordIntent.CodeChanged -> _state.update { it.copy(code = intent.value.filter(Char::isDigit).take(4), codeError = null) }
-            ForgotPasswordIntent.SubmitCode -> submitCode()
+            ForgotPasswordIntent.SubmitPhone -> submitPhone()
+            is ForgotPasswordIntent.OtpChanged -> _state.update {
+                it.copy(otp = intent.value.filter(Char::isDigit).take(OtpLength), otpError = null)
+            }
+            ForgotPasswordIntent.SubmitOtp -> submitOtp()
+            ForgotPasswordIntent.ResendOtp -> resendOtp()
             is ForgotPasswordIntent.NewPasswordChanged -> _state.update { it.copy(newPassword = intent.value, passwordError = null) }
+            is ForgotPasswordIntent.ConfirmPasswordChanged -> _state.update {
+                it.copy(confirmPassword = intent.value, confirmPasswordError = null)
+            }
             ForgotPasswordIntent.SubmitNewPassword -> submitNewPassword()
+            ForgotPasswordIntent.Login -> _state.update { it.copy(navigateSignIn = true) }
+            ForgotPasswordIntent.NavigationHandled -> _state.update { it.copy(navigateSignIn = false) }
+        }
+    }
+
+    private fun submitMethod() {
+        when (_state.value.selectedMethod) {
+            ForgotPasswordMethod.Email -> _state.update { it.copy(step = ForgotPasswordStep.EmailInput, methodError = null) }
+            ForgotPasswordMethod.Phone -> _state.update { it.copy(step = ForgotPasswordStep.PhoneInput, methodError = null) }
+            null -> _state.update { it.copy(methodError = "Choose email or phone number") }
         }
     }
 
@@ -44,27 +72,57 @@ class ForgotPasswordViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isLoading = false,
-                    step = if (result.isSuccess) ForgotPasswordStep.Code else ForgotPasswordStep.Email,
+                    step = if (result.isSuccess) ForgotPasswordStep.EmailVerification else ForgotPasswordStep.EmailInput,
                     emailError = result.exceptionOrNull()?.message,
+                    otp = "",
+                    otpError = null,
+                    otpToken = if (result.isSuccess) it.otpToken + 1 else it.otpToken,
                 )
             }
         }
     }
 
-    private fun submitCode() {
-        if (_state.value.code.length != 4) {
-            _state.update { it.copy(codeError = "Enter the 4 digit code") }
+    private fun submitPhone() {
+        val digits = _state.value.phone.filter(Char::isDigit)
+        if (digits.length < MinPhoneDigits) {
+            _state.update { it.copy(phoneError = "Enter a valid phone number") }
         } else {
-            _state.update { it.copy(step = ForgotPasswordStep.NewPassword) }
+            _state.update {
+                it.copy(
+                    step = ForgotPasswordStep.PhoneVerification,
+                    otp = "",
+                    otpError = null,
+                    otpToken = it.otpToken + 1,
+                )
+            }
         }
+    }
+
+    private fun submitOtp() {
+        if (_state.value.otp != SimulatedOtpCode) {
+            _state.update { it.copy(otpError = "Enter the verification code we sent") }
+        } else {
+            _state.update { it.copy(step = ForgotPasswordStep.NewPassword, otpError = null) }
+        }
+    }
+
+    private fun resendOtp() {
+        _state.update { it.copy(otp = "", otpError = null, otpToken = it.otpToken + 1) }
     }
 
     private fun submitNewPassword() {
         val result = PasswordValidator.validate(_state.value.newPassword)
-        if (result is ValidationResult.Invalid) {
-            _state.update { it.copy(passwordError = result.message) }
-        } else {
-            _state.update { it.copy(step = ForgotPasswordStep.Success, successMessage = "Password updated") }
+        when {
+            result is ValidationResult.Invalid -> _state.update { it.copy(passwordError = result.message) }
+            _state.value.newPassword != _state.value.confirmPassword -> _state.update {
+                it.copy(confirmPasswordError = "Passwords do not match")
+            }
+            else -> _state.update {
+                it.copy(
+                    step = ForgotPasswordStep.Success,
+                    successMessage = "Password changed successfully, you can login again with a new password",
+                )
+            }
         }
     }
 }

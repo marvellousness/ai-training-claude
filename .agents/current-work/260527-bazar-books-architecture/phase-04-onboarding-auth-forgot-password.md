@@ -25,7 +25,9 @@ Implement Figma onboarding, sign-in, multi-step sign-up, and forgot password wit
 - `2.8 Sign Up - Success Verification`
 - `3. Forgot Password`
 - `3.1 Forgot Password - With Email`
+- `3.2 Forgot Password - With Phone`
 - `3.3 Forgot Password - Verification Code Email`
+- `3.4 Forgot Password - Verification Code Phone`
 - `3.5 Forgot Password - Create New Password`
 - `3.6 Forgot Password - Success Create New Password`
 
@@ -53,12 +55,13 @@ Implement Figma onboarding, sign-in, multi-step sign-up, and forgot password wit
    - local simulated OTP generation and resend for email and phone
    - mandatory phone validation before account completion
    - success state and `Get Started` completion action
-6. Implement forgot-password email flow:
-   - email method selection/input
-   - code verification
-   - create new password
-   - success
-7. Show disabled or unavailable UI for Google/Apple and forgot-password phone paths only if needed visually; do not implement real provider business logic in v1.
+6. Implement forgot-password MVI:
+   - explicit steps: `MethodSelection`, `EmailInput`, `PhoneInput`, `EmailVerification`, `PhoneVerification`, `NewPassword`, `Success`
+   - email and phone reset method cards
+   - local simulated OTP generation and resend for email and phone
+   - new password and confirm password validation
+   - success state and `Login` return action
+7. Show disabled or unavailable UI for Google/Apple paths only if needed visually; do not implement real provider business logic in v1.
 8. Add English/Vietnamese strings.
 
 ## Sign-Up Flow Contract
@@ -70,6 +73,16 @@ Implement Figma onboarding, sign-in, multi-step sign-up, and forgot password wit
 - `Get Started` completes sign-up and navigates home.
 - Resend actions regenerate the relevant local simulated OTP and clear the current OTP error.
 
+## Forgot-Password Flow Contract
+
+- Method selection requires email or phone before continuing.
+- Email `Send` validates email, generates a local simulated email OTP, and moves to `EmailVerification`.
+- Phone `Send` validates a non-blank plausible numeric phone number, generates a local simulated phone OTP, and moves to `PhoneVerification`.
+- OTP `Continue` validates the local code and moves to `NewPassword`.
+- Resend regenerates the relevant local simulated OTP and clears the OTP field/error.
+- New password `Send` requires a valid password and matching confirm password, then moves to `Success`.
+- Success `Login` returns to sign-in.
+
 ## Acceptance Criteria
 
 - First launch goes through splash/onboarding.
@@ -78,7 +91,8 @@ Implement Figma onboarding, sign-in, multi-step sign-up, and forgot password wit
 - User can sign in with simulated email/password.
 - User can complete sign-up through form, email OTP, mandatory phone input, phone OTP, and success.
 - Password checklist appears while the user is typing a password.
-- User can complete email forgot-password simulation.
+- User can complete email and phone forgot-password simulations.
+- User cannot finish forgot password with mismatched new/confirm passwords.
 - Google/Apple and real SMS/email provider integrations are not accidentally wired.
 
 ## Validation

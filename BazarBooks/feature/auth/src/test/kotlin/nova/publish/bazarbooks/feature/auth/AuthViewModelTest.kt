@@ -17,6 +17,7 @@ import nova.publish.bazarbooks.core.domain.usecase.auth.LoginUseCase
 import nova.publish.bazarbooks.core.domain.usecase.auth.RequestPasswordResetUseCase
 import nova.publish.bazarbooks.core.domain.usecase.auth.SignUpUseCase
 import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordIntent
+import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordMethod
 import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordStep
 import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordViewModel
 import nova.publish.bazarbooks.feature.auth.signin.SigninIntent
@@ -180,19 +181,110 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `forgot password email flow reaches success`() = runTest(dispatcher) {
+    fun `forgot password requires a reset method before continuing`() = runTest(dispatcher) {
         val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
 
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
+
+        assertEquals(ForgotPasswordStep.MethodSelection, viewModel.state.value.step)
+        assertEquals("Choose email or phone number", viewModel.state.value.methodError)
+    }
+
+    @Test
+    fun `forgot password email path reaches success`() = runTest(dispatcher) {
+        val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
+
+        viewModel.onIntent(ForgotPasswordIntent.MethodSelected(ForgotPasswordMethod.Email))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
         viewModel.onIntent(ForgotPasswordIntent.EmailChanged("reader@example.com"))
         viewModel.onIntent(ForgotPasswordIntent.SubmitEmail)
         advanceUntilIdle()
-        viewModel.onIntent(ForgotPasswordIntent.CodeChanged("2850"))
-        viewModel.onIntent(ForgotPasswordIntent.SubmitCode)
+        viewModel.onIntent(ForgotPasswordIntent.OtpChanged(ForgotPasswordViewModel.SimulatedOtpCode))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitOtp)
         viewModel.onIntent(ForgotPasswordIntent.NewPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.ConfirmPasswordChanged("password1"))
         viewModel.onIntent(ForgotPasswordIntent.SubmitNewPassword)
 
         assertTrue(repository.resetCalled)
         assertEquals(ForgotPasswordStep.Success, viewModel.state.value.step)
+    }
+
+    @Test
+    fun `forgot password phone path reaches success`() = runTest(dispatcher) {
+        val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
+
+        viewModel.onIntent(ForgotPasswordIntent.MethodSelected(ForgotPasswordMethod.Phone))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
+        viewModel.onIntent(ForgotPasswordIntent.PhoneChanged("+9651234357565"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitPhone)
+        viewModel.onIntent(ForgotPasswordIntent.OtpChanged(ForgotPasswordViewModel.SimulatedOtpCode))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitOtp)
+        viewModel.onIntent(ForgotPasswordIntent.NewPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.ConfirmPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitNewPassword)
+
+        assertFalse(repository.resetCalled)
+        assertEquals(ForgotPasswordStep.Success, viewModel.state.value.step)
+    }
+
+    @Test
+    fun `forgot password otp mismatch and resend stay on verification`() = runTest(dispatcher) {
+        val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
+
+        viewModel.onIntent(ForgotPasswordIntent.MethodSelected(ForgotPasswordMethod.Phone))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
+        viewModel.onIntent(ForgotPasswordIntent.PhoneChanged("+9651234357565"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitPhone)
+        val firstToken = viewModel.state.value.otpToken
+
+        viewModel.onIntent(ForgotPasswordIntent.OtpChanged("0000"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitOtp)
+
+        assertEquals(ForgotPasswordStep.PhoneVerification, viewModel.state.value.step)
+        assertEquals("Enter the verification code we sent", viewModel.state.value.otpError)
+
+        viewModel.onIntent(ForgotPasswordIntent.ResendOtp)
+
+        assertTrue(viewModel.state.value.otpToken != firstToken)
+        assertEquals("", viewModel.state.value.otp)
+        assertEquals(null, viewModel.state.value.otpError)
+    }
+
+    @Test
+    fun `forgot password confirm password mismatch blocks success`() = runTest(dispatcher) {
+        val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
+
+        viewModel.onIntent(ForgotPasswordIntent.MethodSelected(ForgotPasswordMethod.Email))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
+        viewModel.onIntent(ForgotPasswordIntent.EmailChanged("reader@example.com"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitEmail)
+        advanceUntilIdle()
+        viewModel.onIntent(ForgotPasswordIntent.OtpChanged(ForgotPasswordViewModel.SimulatedOtpCode))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitOtp)
+        viewModel.onIntent(ForgotPasswordIntent.NewPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.ConfirmPasswordChanged("password2"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitNewPassword)
+
+        assertEquals(ForgotPasswordStep.NewPassword, viewModel.state.value.step)
+        assertEquals("Passwords do not match", viewModel.state.value.confirmPasswordError)
+    }
+
+    @Test
+    fun `forgot password login action requests sign in navigation`() = runTest(dispatcher) {
+        val viewModel = ForgotPasswordViewModel(RequestPasswordResetUseCase(repository))
+
+        viewModel.onIntent(ForgotPasswordIntent.MethodSelected(ForgotPasswordMethod.Phone))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitMethod)
+        viewModel.onIntent(ForgotPasswordIntent.PhoneChanged("+9651234357565"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitPhone)
+        viewModel.onIntent(ForgotPasswordIntent.OtpChanged(ForgotPasswordViewModel.SimulatedOtpCode))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitOtp)
+        viewModel.onIntent(ForgotPasswordIntent.NewPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.ConfirmPasswordChanged("password1"))
+        viewModel.onIntent(ForgotPasswordIntent.SubmitNewPassword)
+        viewModel.onIntent(ForgotPasswordIntent.Login)
+
+        assertTrue(viewModel.state.value.navigateSignIn)
     }
 
     private class RecordingAuthRepository : AuthRepository {
