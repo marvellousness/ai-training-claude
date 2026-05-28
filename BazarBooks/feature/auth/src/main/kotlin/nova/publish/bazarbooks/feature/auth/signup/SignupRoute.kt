@@ -1,4 +1,4 @@
-package nova.publish.bazarbooks.feature.auth
+package nova.publish.bazarbooks.feature.auth.signup
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable

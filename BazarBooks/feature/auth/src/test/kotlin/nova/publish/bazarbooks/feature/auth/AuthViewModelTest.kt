@@ -16,6 +16,14 @@ import nova.publish.bazarbooks.core.domain.usecase.auth.ContinueAsGuestUseCase
 import nova.publish.bazarbooks.core.domain.usecase.auth.LoginUseCase
 import nova.publish.bazarbooks.core.domain.usecase.auth.RequestPasswordResetUseCase
 import nova.publish.bazarbooks.core.domain.usecase.auth.SignUpUseCase
+import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordIntent
+import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordStep
+import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordViewModel
+import nova.publish.bazarbooks.feature.auth.signin.SigninIntent
+import nova.publish.bazarbooks.feature.auth.signin.SigninViewModel
+import nova.publish.bazarbooks.feature.auth.signup.SignupIntent
+import nova.publish.bazarbooks.feature.auth.signup.SignupStep
+import nova.publish.bazarbooks.feature.auth.signup.SignupViewModel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -80,7 +88,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `sign up exposes password requirements and submits valid account`() = runTest(dispatcher) {
+    fun `sign up exposes password requirements while typing`() = runTest(dispatcher) {
         val viewModel = SignupViewModel(SignUpUseCase(repository))
 
         viewModel.onIntent(SignupIntent.FullNameChanged("John Doe"))
@@ -90,13 +98,85 @@ class AuthViewModelTest {
         assertFalse(viewModel.state.value.passwordRequirements.minLength)
 
         viewModel.onIntent(SignupIntent.PasswordChanged("password1"))
-        viewModel.onIntent(SignupIntent.Submit)
-        advanceUntilIdle()
 
         assertTrue(viewModel.state.value.passwordRequirements.minLength)
         assertTrue(viewModel.state.value.passwordRequirements.hasNumber)
+        assertTrue(viewModel.state.value.passwordRequirements.hasLetter)
+    }
+
+    @Test
+    fun `sign up valid form moves to email verification before account creation`() = runTest(dispatcher) {
+        val viewModel = SignupViewModel(SignUpUseCase(repository))
+
+        viewModel.enterValidSignupForm()
+        viewModel.onIntent(SignupIntent.Submit)
+        advanceUntilIdle()
+
+        assertEquals(SignupStep.EmailVerification, viewModel.state.value.step)
+        assertFalse(repository.signUpCalled)
+        assertFalse(viewModel.state.value.showSuccess)
+    }
+
+    @Test
+    fun `sign up completes through simulated email otp mandatory phone and phone otp`() = runTest(dispatcher) {
+        val viewModel = SignupViewModel(SignUpUseCase(repository))
+
+        viewModel.enterValidSignupForm()
+        viewModel.onIntent(SignupIntent.Submit)
+        viewModel.onIntent(SignupIntent.EmailOtpChanged(SignupViewModel.SimulatedOtpCode))
+        viewModel.onIntent(SignupIntent.SubmitEmailOtp)
+        viewModel.onIntent(SignupIntent.PhoneChanged("+9651234357565"))
+        viewModel.onIntent(SignupIntent.SubmitPhone)
+        viewModel.onIntent(SignupIntent.PhoneOtpChanged(SignupViewModel.SimulatedOtpCode))
+        viewModel.onIntent(SignupIntent.SubmitPhoneOtp)
+        advanceUntilIdle()
+
+        assertEquals(SignupStep.Success, viewModel.state.value.step)
         assertTrue(repository.signUpCalled)
+        assertFalse(viewModel.state.value.showSuccess)
+
+        viewModel.onIntent(SignupIntent.GetStarted)
         assertTrue(viewModel.state.value.showSuccess)
+    }
+
+    @Test
+    fun `sign up requires valid phone before phone verification`() = runTest(dispatcher) {
+        val viewModel = SignupViewModel(SignUpUseCase(repository))
+
+        viewModel.enterValidSignupForm()
+        viewModel.onIntent(SignupIntent.Submit)
+        viewModel.onIntent(SignupIntent.EmailOtpChanged(SignupViewModel.SimulatedOtpCode))
+        viewModel.onIntent(SignupIntent.SubmitEmailOtp)
+        viewModel.onIntent(SignupIntent.PhoneChanged("12"))
+        viewModel.onIntent(SignupIntent.SubmitPhone)
+
+        assertEquals(SignupStep.PhoneInput, viewModel.state.value.step)
+        assertEquals("Enter a valid phone number", viewModel.state.value.phoneError)
+    }
+
+    @Test
+    fun `sign up rejects wrong otp and resend regenerates simulated otp`() = runTest(dispatcher) {
+        val viewModel = SignupViewModel(SignUpUseCase(repository))
+
+        viewModel.enterValidSignupForm()
+        viewModel.onIntent(SignupIntent.Submit)
+        val firstOtp = viewModel.state.value.emailOtpToken
+        viewModel.onIntent(SignupIntent.EmailOtpChanged("0000"))
+        viewModel.onIntent(SignupIntent.SubmitEmailOtp)
+
+        assertEquals(SignupStep.EmailVerification, viewModel.state.value.step)
+        assertEquals("Enter the verification code we sent", viewModel.state.value.emailOtpError)
+
+        viewModel.onIntent(SignupIntent.ResendEmailOtp)
+
+        assertTrue(viewModel.state.value.emailOtpToken != firstOtp)
+        assertEquals(null, viewModel.state.value.emailOtpError)
+    }
+
+    private fun SignupViewModel.enterValidSignupForm() {
+        onIntent(SignupIntent.FullNameChanged("John Doe"))
+        onIntent(SignupIntent.EmailChanged("john@example.com"))
+        onIntent(SignupIntent.PasswordChanged("password1"))
     }
 
     @Test

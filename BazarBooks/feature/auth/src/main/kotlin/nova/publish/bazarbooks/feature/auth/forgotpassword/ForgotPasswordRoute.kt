@@ -1,4 +1,4 @@
-package nova.publish.bazarbooks.feature.auth
+package nova.publish.bazarbooks.feature.auth.forgotpassword
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

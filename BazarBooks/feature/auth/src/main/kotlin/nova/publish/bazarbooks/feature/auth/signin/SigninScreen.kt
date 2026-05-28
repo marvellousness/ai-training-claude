@@ -1,4 +1,4 @@
-package nova.publish.bazarbooks.feature.auth
+package nova.publish.bazarbooks.feature.auth.signin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

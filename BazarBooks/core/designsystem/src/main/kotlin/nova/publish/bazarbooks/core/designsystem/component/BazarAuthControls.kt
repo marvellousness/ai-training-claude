@@ -292,7 +292,64 @@ fun BazarSocialSignInButton(
     }
 }
 
+@Composable
+fun BazarPasswordRequirementList(
+    requirements: List<BazarPasswordRequirement>,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(BazarSpacing.Sm),
+        modifier = modifier,
+    ) {
+        requirements.forEach { requirement ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(BazarSpacing.Md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (requirement.satisfied) "✓" else "×",
+                    color = if (requirement.satisfied) BazarPalette.Primary300 else BazarPalette.Red,
+                    style = BazarTextStyles.Body14Semibold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.width(BazarAuthRequirementIconWidth),
+                )
+                Text(
+                    text = requirement.text,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = BazarTextStyles.Body14Regular,
+                )
+            }
+        }
+    }
+}
+
+data class BazarPasswordRequirement(
+    val text: String,
+    val satisfied: Boolean,
+)
+
+@Composable
+fun BazarSuccessMark(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(BazarAuthSuccessMarkSize)
+            .background(BazarPalette.Primary50, RoundedCornerShape(BazarAuthSuccessMarkRadius)),
+    ) {
+        Text(
+            text = "✓",
+            color = MaterialTheme.colorScheme.primary,
+            style = BazarTextStyles.Heading1,
+        )
+    }
+}
+
 private val BazarAuthBackButtonSize = 40.dp
 private val BazarAuthButtonRadius = 24.dp
 private val BazarAuthPasswordToggleSize = 40.dp
 private val BazarAuthSocialIconWidth = 24.dp
+private val BazarAuthRequirementIconWidth = 16.dp
+private val BazarAuthSuccessMarkSize = 90.dp
+private val BazarAuthSuccessMarkRadius = 45.dp

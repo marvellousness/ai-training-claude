@@ -1,4 +1,4 @@
-package nova.publish.bazarbooks.feature.auth
+package nova.publish.bazarbooks.feature.auth.signin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

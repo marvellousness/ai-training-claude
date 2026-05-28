@@ -33,8 +33,8 @@ The app keeps the existing Android module scaffold:
 ## Locked Product Decisions
 
 - Product mode: offline-first.
-- Auth v1: email/password, guest mode, forgot password, simulated refresh token.
-- Deferred auth: Google sign-in, Apple sign-in, phone verification.
+- Auth v1: email/password, guest mode, forgot password, simulated refresh token, mandatory phone capture during sign-up, and local simulated email/phone OTP.
+- Deferred auth: Google sign-in, Apple sign-in, and real SMS/email provider integration.
 - Catalog data: category, author, publisher/vendor, rating, stock, discounts, wishlist, reviews, related books.
 - Search: server-style search contract with pagination and filters by category, price, rating, author; implemented locally against Room until a real backend exists.
 - Checkout: demo-only, but with full simulated processing.
@@ -76,7 +76,7 @@ Design page `0:1` contains these implementation sections:
 - `2.7 Sign Up - Verification Code Phone`
 - `2.8 Sign Up - Success Verification`
 
-V1 implements email sign-in/sign-up and success state. Phone verification and social auth are deferred.
+V1 implements email sign-in plus the full Figma sign-up flow from `2.2` through `2.8`: form, email OTP, mandatory phone input, phone OTP, and success. Email/phone OTP are simulated locally, phone number is mandatory before account completion, and the password checklist appears while typing. Social providers remain out of scope.
 
 ### 3. Forgot Password
 
@@ -190,7 +190,7 @@ Key Figma content: profile menu, edit account, address, favorites, order history
 
 ## Open Risks
 
-- Figma includes auth screens that are out of v1 scope. Mitigation: implement email flow, keep social/phone routes absent or disabled until explicitly in scope.
+- Figma includes social auth and forgot-password phone screens that are out of v1 scope. Mitigation: implement local email/phone OTP only for sign-up, keep Google/Apple and forgot-password phone provider routes absent or disabled until explicitly in scope.
 - Server-style search has no real backend. Mitigation: use local Room query/paging behind the same domain request model.
 - Checkout is simulated. Mitigation: build a deterministic order state machine and persist every state transition.
 - Tablet/foldable support increases UI scope. Mitigation: use shared adaptive layout helpers instead of duplicate feature screens.

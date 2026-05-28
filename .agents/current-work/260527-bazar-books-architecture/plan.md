@@ -17,8 +17,8 @@ Build Bazar Books as an offline-first ecommerce Android app using the Figma Desi
 
 ## Locked Decisions
 
-- Auth v1: email/password, guest mode, forgot password, simulated refresh token.
-- Deferred: Google/Apple sign-in and phone verification screens.
+- Auth v1: email/password, guest mode, forgot password, simulated refresh token, mandatory phone capture during sign-up, and local simulated email/phone OTP.
+- Deferred auth: Google/Apple sign-in and real SMS/email provider integration.
 - Market: Figma Kuwait-style address and checkout model.
 - Payments: simulated KNET, credit card demo, and cash on delivery.
 - UI: Figma layout/copy direction with native Material 3 Compose, not pixel-perfect.
@@ -54,7 +54,7 @@ feature:*
 ## Figma Screen Groups
 
 - `1. Onboarding`: splash and onboarding slides.
-- `2. Sign in & Sign up`: email sign-in/sign-up states, password validation, success.
+- `2. Sign in & Sign up`: email sign-in, sign-up sections `2.2` to `2.8`, password validation, email verification, mandatory phone input, phone verification, and success.
 - `3. Forgot Password`: email reset path, verification code, new password, success.
 - `4. Home`: home feed, vendors, authors, book detail.
 - `5. Category`: category tabs, search, recent searches, results.

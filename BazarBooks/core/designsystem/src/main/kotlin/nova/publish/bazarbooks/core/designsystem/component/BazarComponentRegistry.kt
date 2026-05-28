@@ -16,6 +16,8 @@ object BazarComponentRegistry {
         "BazarDividerLabel",
         "BazarBackButton",
         "BazarInlinePrompt",
+        "BazarPasswordRequirementList",
+        "BazarSuccessMark",
         "BazarBookCard",
         "BazarVendorCard",
         "BazarAuthorCard",

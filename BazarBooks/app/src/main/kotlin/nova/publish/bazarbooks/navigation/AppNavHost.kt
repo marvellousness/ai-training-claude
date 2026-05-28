@@ -9,9 +9,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import nova.publish.bazarbooks.core.navigation.AppRoute
-import nova.publish.bazarbooks.feature.auth.ForgotPasswordRoute
-import nova.publish.bazarbooks.feature.auth.SigninRoute
-import nova.publish.bazarbooks.feature.auth.SignupRoute
+import nova.publish.bazarbooks.feature.auth.forgotpassword.ForgotPasswordRoute
+import nova.publish.bazarbooks.feature.auth.signin.SigninRoute
+import nova.publish.bazarbooks.feature.auth.signup.SignupRoute
 import nova.publish.bazarbooks.feature.cart_checkout.CartRoute
 import nova.publish.bazarbooks.feature.cart_checkout.CheckoutRoute
 import nova.publish.bazarbooks.feature.cart_checkout.OrderConfirmationRoute
