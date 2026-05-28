@@ -11,6 +11,7 @@ fun SigninRoute(
     onSignIn: () -> Unit,
     onSignUp: () -> Unit,
     onForgotPassword: () -> Unit,
+    onBack: () -> Unit = {},
     viewModel: SigninViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -27,5 +28,6 @@ fun SigninRoute(
         onIntent = viewModel::onIntent,
         onSignUp = onSignUp,
         onForgotPassword = onForgotPassword,
+        onBack = onBack,
     )
 }

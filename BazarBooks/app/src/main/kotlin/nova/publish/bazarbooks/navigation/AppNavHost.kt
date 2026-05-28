@@ -40,6 +40,7 @@ fun AppNavHost(
                 onSignIn = { navController.navigate(AppRoute.Home.route) },
                 onSignUp = { navController.navigate(AppRoute.SignUp.route) },
                 onForgotPassword = { navController.navigate(AppRoute.ForgotPassword.route) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable(AppRoute.SignUp.route) {
