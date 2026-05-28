@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -17,7 +19,12 @@ import nova.publish.bazarbooks.core.navigation.AppRoute
 import nova.publish.bazarbooks.navigation.AppNavHost
 
 @Composable
-fun BazarBooksApp() {
+fun BazarBooksApp(
+    startupViewModel: AppStartupViewModel = hiltViewModel(),
+) {
+    val startupState by startupViewModel.state.collectAsStateWithLifecycle()
+    if (startupState.isLoading) return
+
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -61,7 +68,11 @@ fun BazarBooksApp() {
             }
         },
     ) { innerPadding ->
-        AppNavHost(navController = navController, contentPadding = innerPadding)
+        AppNavHost(
+            navController = navController,
+            startDestination = startupState.startDestination,
+            contentPadding = innerPadding,
+        )
     }
 }
 

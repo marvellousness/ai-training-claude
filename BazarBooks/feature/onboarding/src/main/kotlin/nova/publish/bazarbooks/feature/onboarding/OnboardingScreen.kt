@@ -1,60 +1,64 @@
 package nova.publish.bazarbooks.feature.onboarding
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import nova.publish.bazarbooks.core.designsystem.component.BazarPrimaryButton
+import nova.publish.bazarbooks.core.designsystem.component.BazarSecondaryButton
+import nova.publish.bazarbooks.core.designsystem.theme.BazarDimensions
 import nova.publish.bazarbooks.core.designsystem.theme.BazarPalette
+import nova.publish.bazarbooks.core.designsystem.theme.BazarSpacing
 import nova.publish.bazarbooks.core.designsystem.theme.BazarTextStyles
-import nova.publish.bazarbooks.feature.onboarding.components.FigmaOnboardingPages
-import nova.publish.bazarbooks.feature.onboarding.components.PageIndicator
-import kotlin.math.min
+import nova.publish.bazarbooks.feature.onboarding.components.OnboardingPage
+import nova.publish.bazarbooks.feature.onboarding.components.OnboardingPages
 
 @Composable
 fun OnboardingScreen(
-    onGetStarted: () -> Unit,
     modifier: Modifier = Modifier,
+    pageIndex: Int = 0,
+    onPageChanged: (Int) -> Unit = {},
+    onGetStarted: () -> Unit,
 ) {
     var showSplash by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        delay(900)
+        delay(100)
         showSplash = false
     }
 
@@ -62,6 +66,8 @@ fun OnboardingScreen(
         SplashScreen(modifier = modifier)
     } else {
         OnboardingPager(
+            pageIndex = pageIndex.coerceIn(OnboardingPages.indices),
+            onPageChanged = onPageChanged,
             onGetStarted = onGetStarted,
             modifier = modifier,
         )
@@ -70,206 +76,312 @@ fun OnboardingScreen(
 
 @Composable
 private fun OnboardingPager(
+    pageIndex: Int,
+    onPageChanged: (Int) -> Unit,
     onGetStarted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var pageIndex by rememberSaveable { mutableIntStateOf(0) }
-    val pages = FigmaOnboardingPages
-    val page = pages[pageIndex]
+    val pagerState = rememberPagerState(initialPage = pageIndex) {
+        OnboardingPages.size
+    }
+    val activePageIndex = pagerState.currentPage.coerceIn(OnboardingPages.indices)
 
-    FigmaPhoneFrame(
-        background = BazarPalette.White,
+    OnboardingPagerEffects(
+        pagerState = pagerState,
+        selectedPageIndex = pageIndex,
+        pageCount = OnboardingPages.size,
+        onPageChanged = onPageChanged,
+    )
+
+    OnboardingPagerLayout(
+        pagerState = pagerState,
+        activePageIndex = activePageIndex,
+        onSkip = onGetStarted,
+        onPrimaryAction = {
+            if (activePageIndex < OnboardingPages.lastIndex) {
+                onPageChanged(activePageIndex + 1)
+            } else {
+                onGetStarted()
+            }
+        },
+        onSignIn = onGetStarted,
         modifier = modifier,
-    ) { scale ->
-        TextButton(
-            onClick = onGetStarted,
+    )
+}
+
+@Composable
+private fun OnboardingPagerEffects(
+    pagerState: PagerState,
+    selectedPageIndex: Int,
+    pageCount: Int,
+    onPageChanged: (Int) -> Unit,
+) {
+    val latestOnPageChanged by rememberUpdatedState(onPageChanged)
+
+    LaunchedEffect(selectedPageIndex) {
+        if (pagerState.currentPage != selectedPageIndex) {
+            pagerState.animateScrollToPage(selectedPageIndex)
+        }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .distinctUntilChanged()
+            .collect { page -> latestOnPageChanged(page) }
+    }
+
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(OnboardingAutoAdvanceMillis)
+            val nextPage = (pagerState.currentPage + 1) % pageCount
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+}
+
+@Composable
+private fun OnboardingPagerLayout(
+    pagerState: PagerState,
+    activePageIndex: Int,
+    onSkip: () -> Unit,
+    onPrimaryAction: () -> Unit,
+    onSignIn: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(
+                start = BazarDimensions.HorizontalPadding,
+                top = BazarSpacing.Xxxl,
+                end = BazarDimensions.HorizontalPadding,
+                bottom = BazarSpacing.Xxl,
+            ),
+    ) {
+        OnboardingSkipRow(onSkip = onSkip)
+
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
-                .offset(x = scaled(24.dp, scale), y = scaled(52.dp, scale))
-                .height(scaled(36.dp, scale)),
-            colors = ButtonDefaults.textButtonColors(contentColor = BazarPalette.Primary500),
+                .fillMaxWidth()
+                .weight(1f),
+            verticalAlignment = Alignment.Top,
+        ) { pagerPage ->
+            OnboardingPageContent(page = OnboardingPages[pagerPage])
+        }
+
+        OnboardingPageIndicator(
+            current = activePageIndex,
+            total = OnboardingPages.size,
+        )
+
+        Spacer(Modifier.height(BazarSpacing.Xxl))
+
+        OnboardingActionColumn(
+            primaryText = OnboardingPages[activePageIndex].primaryAction,
+            onPrimaryAction = onPrimaryAction,
+            onSignIn = onSignIn,
+        )
+    }
+}
+
+@Composable
+private fun OnboardingSkipRow(
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.Start,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        TextButton(
+            onClick = onSkip,
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+            modifier = Modifier
+                .width(SkipButtonWidth)
+                .height(SkipButtonHeight),
         ) {
             Text(
                 text = "Skip",
+                color = MaterialTheme.colorScheme.primary,
                 style = BazarTextStyles.Body14Medium,
-                fontSize = scaledSp(14f, scale).sp,
             )
         }
+    }
+}
+
+@Composable
+private fun OnboardingPageContent(
+    page: OnboardingPage,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Spacer(Modifier.height(BazarSpacing.Md))
 
         Image(
             painter = painterResource(page.imageRes),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .offset(x = scaled(27.dp, scale), y = scaled(109.dp, scale))
-                .size(scaled(320.dp, scale)),
+            modifier = Modifier.size(OnboardingArtworkSize),
         )
+
+        Spacer(Modifier.height(BazarSpacing.Md))
 
         Text(
             text = page.title,
+            color = MaterialTheme.colorScheme.onBackground,
             style = BazarTextStyles.Heading3,
-            color = BazarPalette.Gray900,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = scaled(41.dp, scale), y = scaled(443.dp, scale))
-                .width(scaled(292.dp, scale)),
-            fontSize = scaledSp(24f, scale).sp,
-            lineHeight = scaledSp(32.4f, scale).sp,
+            modifier = Modifier.widthIn(max = OnboardingTextWidth),
         )
+
+        Spacer(Modifier.height(BazarSpacing.Lg))
 
         Text(
-            text = page.body.trim(),
+            text = page.body,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = BazarTextStyles.Body16Regular,
-            color = BazarPalette.Gray500,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = scaled(41.dp, scale), y = scaled(519.dp, scale))
-                .width(scaled(292.dp, scale)),
-            fontSize = scaledSp(16f, scale).sp,
-            lineHeight = scaledSp(24f, scale).sp,
+            modifier = Modifier.widthIn(max = OnboardingTextWidth),
         )
-
-        PageIndicator(
-            current = pageIndex,
-            total = pages.size,
-            modifier = Modifier.offset(x = scaled(176.dp, scale), y = scaled(619.dp, scale)),
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(scaled(8.dp, scale)),
-            modifier = Modifier
-                .offset(x = scaled(24.dp, scale), y = scaled(659.dp, scale))
-                .width(scaled(327.dp, scale)),
-        ) {
-            FigmaButton(
-                text = page.primaryAction,
-                primary = true,
-                scale = scale,
-                onClick = {
-                    if (pageIndex == 0) {
-                        pageIndex = 1
-                    } else {
-                        onGetStarted()
-                    }
-                },
-            )
-            FigmaButton(
-                text = "Sign in",
-                primary = false,
-                scale = scale,
-                onClick = onGetStarted,
-            )
-        }
     }
 }
 
 @Composable
 private fun SplashScreen(modifier: Modifier = Modifier) {
-    FigmaPhoneFrame(
-        background = BazarPalette.Primary500,
-        modifier = modifier,
-    ) { scale ->
-        BazarLogo(
-            modifier = Modifier.offset(x = scaled(80.dp, scale), y = scaled(376.dp, scale)),
-            scale = scale,
-        )
-    }
-}
-
-@SuppressLint("UnusedBoxWithConstraintsScope")
-@Composable
-private fun FigmaPhoneFrame(
-    background: Color,
-    modifier: Modifier = Modifier,
-    content: @Composable (Float) -> Unit,
-) {
-    BoxWithConstraints(
-        contentAlignment = Alignment.TopCenter,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
-            .background(background),
+            .background(MaterialTheme.colorScheme.primary),
     ) {
-        val scale = remember(maxWidth, maxHeight) {
-            min(maxWidth.value / FigmaWidth.value, maxHeight.value / FigmaHeight.value)
-        }
-        Box(
+        OnboardingLogo(
             modifier = Modifier
-                .size(width = scaled(FigmaWidth, scale), height = scaled(FigmaHeight, scale))
-                .background(background),
-        ) {
-            content(scale)
-        }
-    }
-}
-
-@Composable
-private fun FigmaButton(
-    text: String,
-    primary: Boolean,
-    scale: Float,
-    onClick: () -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(scaled(12.dp, scale)),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (primary) BazarPalette.Primary500 else BazarPalette.Primary50,
-            contentColor = if (primary) BazarPalette.White else BazarPalette.Primary500,
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp
-        ),
-        modifier = Modifier
-            .width(scaled(327.dp, scale))
-            .height(scaled(56.dp, scale)),
-    ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = scaledSp(0.3f, scale).sp,
-            fontSize = scaledSp(16f, scale).sp,
-            lineHeight = scaledSp(24f, scale).sp,
+                .width(SplashLogoWidth)
+                .height(SplashLogoHeight),
         )
     }
 }
 
 @Composable
-private fun BazarLogo(
-    modifier: Modifier,
-    scale: Float,
+private fun OnboardingActionColumn(
+    primaryText: String,
+    onPrimaryAction: () -> Unit,
+    onSignIn: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(BazarSpacing.Sm),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        OnboardingButton(
+            text = primaryText,
+            primary = true,
+            onClick = onPrimaryAction,
+        )
+        OnboardingButton(
+            text = "Sign in",
+            primary = false,
+            onClick = onSignIn,
+        )
+    }
+}
+
+@Composable
+private fun OnboardingButton(
+    text: String,
+    primary: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val buttonModifier = modifier
+        .fillMaxWidth()
+        .height(BazarDimensions.ButtonHeight)
+    if (primary) {
+        BazarPrimaryButton(
+            text = text,
+            onClick = onClick,
+            modifier = buttonModifier,
+        )
+    } else {
+        BazarSecondaryButton(
+            text = text,
+            onClick = onClick,
+            modifier = buttonModifier,
+        )
+    }
+}
+
+@Composable
+private fun OnboardingPageIndicator(
+    current: Int,
+    total: Int,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(BazarSpacing.Xs),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.height(BazarSpacing.Sm),
+    ) {
+        repeat(total) { index ->
+            val selected = index == current
+            Box(
+                modifier = Modifier
+                    .size(
+                        if (selected) {
+                            BazarSpacing.Sm
+                        } else {
+                            BazarSpacing.Xs
+                        },
+                    )
+                    .clip(CircleShape)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else BazarPalette.Gray200),
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnboardingLogo(
+    modifier: Modifier = Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.height(scaled(44.dp, scale)),
+        horizontalArrangement = Arrangement.spacedBy(BazarSpacing.Md),
+        modifier = modifier,
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(scaled(44.dp, scale))
+                .size(SplashLogoMarkSize)
                 .clip(CircleShape)
-                .background(BazarPalette.White),
+                .background(MaterialTheme.colorScheme.onPrimary),
         ) {
             Text(
                 text = "B",
-                color = BazarPalette.Primary500,
-                fontWeight = FontWeight.Bold,
-                fontSize = scaledSp(24f, scale).sp,
+                color = MaterialTheme.colorScheme.primary,
+                style = BazarTextStyles.Heading3,
             )
         }
-        Spacer(Modifier.width(scaled(10.dp, scale)))
         Text(
             text = "Bazar.",
-            color = BazarPalette.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = scaledSp(31.5f, scale).sp,
-            lineHeight = scaledSp(44f, scale).sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = BazarTextStyles.Heading2,
         )
     }
 }
 
-private val FigmaWidth = 375.dp
-private val FigmaHeight = 812.dp
-
-private fun scaled(value: Dp, scale: Float): Dp = value * scale
-
-private fun scaledSp(value: Float, scale: Float): Float = value * scale
+private val SkipButtonWidth = 60.dp
+private val SkipButtonHeight = 36.dp
+private val OnboardingArtworkSize = 320.dp
+private val OnboardingTextWidth = 243.dp
+private val SplashLogoWidth = 158.dp
+private val SplashLogoHeight = 44.dp
+private val SplashLogoMarkSize = 44.dp
+private const val OnboardingAutoAdvanceMillis = 2_000L

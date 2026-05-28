@@ -7,10 +7,10 @@ data class OnboardingPage(
     val title: String,
     val body: String,
     val primaryAction: String,
-    @DrawableRes val imageRes: Int,
+    @param:DrawableRes val imageRes: Int,
 )
 
-val FigmaOnboardingPages = listOf(
+val OnboardingPages = listOf(
     OnboardingPage(
         title = "Now reading books will be easier",
         body = "Discover new worlds, join a vibrant reading community. Start your reading adventure effortlessly with us.",

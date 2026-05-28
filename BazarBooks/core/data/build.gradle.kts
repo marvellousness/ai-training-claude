@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.hilt.android)
+    kapt(libs.androidx.room.compiler)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)

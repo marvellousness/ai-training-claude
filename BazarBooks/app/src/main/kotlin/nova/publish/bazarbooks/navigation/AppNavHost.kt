@@ -24,15 +24,16 @@ import nova.publish.bazarbooks.feature.profile.ProfileRoute
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    startDestination: String = AppRoute.Onboarding.route,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     NavHost(
         navController = navController,
-        startDestination = AppRoute.Onboarding.route,
+        startDestination = startDestination,
         modifier = Modifier.padding(contentPadding),
     ) {
         composable(AppRoute.Onboarding.route) {
-            OnboardingRoute { navController.navigate(AppRoute.SignIn.route) }
+            OnboardingRoute(onGetStarted = { navController.navigate(AppRoute.SignIn.route) })
         }
         composable(AppRoute.SignIn.route) {
             SigninRoute(
