@@ -18,6 +18,7 @@ object BazarComponentRegistry {
         "BazarInlinePrompt",
         "BazarPasswordRequirementList",
         "BazarSuccessMark",
+        "BazarChipTabRow",
         "BazarBookCard",
         "BazarVendorCard",
         "BazarAuthorCard",

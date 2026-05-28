@@ -29,6 +29,7 @@ class DesignSystemPrimitiveContractTest {
             "BazarInlinePrompt",
             "BazarPasswordRequirementList",
             "BazarSuccessMark",
+            "BazarChipTabRow",
             "BazarBookCard",
             "BazarVendorCard",
             "BazarAuthorCard",
